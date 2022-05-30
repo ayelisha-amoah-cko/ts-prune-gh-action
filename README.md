@@ -103,3 +103,16 @@ See the [actions tab](https://github.com/actions/typescript-action/actions) for 
 ## Usage:
 
 After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
+
+## Using this action
+
+### Monorepo 
+If you are using a monorepo and want to run ts-prune across multiple packages, add a tsconfig file that lists the paths to the tsconfig files for each project. e.g
+```{
+    "extends": [
+        "src/libraries/account-selector/tsconfig.json",
+        "src/libraries/core/tsconfig.json",
+        "src/libraries/features/tsconfig.json",
+        "src/libraries/test-utils/tsconfig.json",
+    ]
+}```

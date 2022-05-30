@@ -1,18 +1,41 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as exec from '@actions/exec'
+
+const projectBase = ' ../prism-ui'
 
 async function run(): Promise<void> {
-  try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+  // TODO: get this from user input
+  const entryPoints = [
+    'libraries/account-selector/tsconfig.json',
+    'libraries/core/tsconfig.json',
+    'libraries/features/tsconfig.json',
+    'libraries/test-utils/tsconfig.json'
+  ]
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+  // TODO: get this from user input
+  const inputIgnore = [
+    '"used in module"',
+    '"react-test-utils"',
+    '"hooks-test-utils"',
+    '"index.ts"',
+    '"index.d.ts"',
+    '".stories.ts"',
+    '".stories.tsx"'
+  ]
 
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+  const ignorePattern = inputIgnore.join(' | grep -v ')
+  const filesToIgnore = `| grep -v ${ignorePattern}`
+
+  core.debug('checking unused files in:')
+  core.debug(JSON.stringify(entryPoints))
+  core.debug('Ignoring output containing:')
+  core.debug(JSON.stringify(inputIgnore))
+
+  for (const entryPoint of entryPoints) {
+    core.debug(`UNUSED EXPORTS FOR PROJECT ${entryPoint}`)
+    core.debug(`${projectBase}/${entryPoint} ${filesToIgnore}`)
+    // TODO this works with shelljs, look at how to get this working with exec
+    exec.exec(`ts-prune -p ${projectBase}/${entryPoint} ${filesToIgnore}`)
   }
 }
 
